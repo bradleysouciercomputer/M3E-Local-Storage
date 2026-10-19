@@ -279,10 +279,11 @@ function renderListRow(entry) {
 
 function render() {
   const meta = labels[state.section] || labels.files;
-  $("#page-title").textContent = state.query.trim() ? "Search results" : meta.title;
-  $("#page-subtitle").textContent = state.query.trim() ? "Matches found in your locally stored items." : meta.subtitle;
+  const currentFolder = state.section === "files" && state.folderId ? getEntry(state.folderId) : null;
+  $("#page-title").textContent = state.query.trim() ? "Search results" : (currentFolder ? currentFolder.name : meta.title);
+  $("#page-subtitle").textContent = state.query.trim() ? "Matches found in your locally stored items." : (currentFolder ? "A folder in your local library. Nothing is uploaded." : meta.subtitle);
   $("#section-eyebrow").textContent = state.query.trim() ? "LOCAL SEARCH" : meta.eyebrow;
-  $("#content-heading").textContent = state.query.trim() ? "Matching items" : meta.heading;
+  $("#content-heading").textContent = state.query.trim() ? "Matching items" : (currentFolder ? "Folder contents" : meta.heading);
   $("#content-description").textContent = state.query.trim() ? "Searches file and folder names on this device" : meta.desc;
   $("#breadcrumbs").innerHTML = breadcrumbHTML();
   $("#breadcrumbs").classList.toggle("hidden", state.section !== "files" && !state.query.trim());
@@ -365,6 +366,7 @@ function showToast(message, kind) {
 
 function navigate(section, folderId) {
   state.section = section || "files";
+  state.sort = state.section === "recent" ? "updated" : "name";
   if (folderId !== undefined) state.folderId = folderId;
   if (state.section !== "files") state.folderId = null;
   state.selected.clear();
