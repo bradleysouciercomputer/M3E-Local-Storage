@@ -307,7 +307,7 @@ function render() {
   $("#content-description").textContent = state.query.trim() ? "Searches file and folder names on this device" : meta.desc;
   $("#breadcrumbs").innerHTML = breadcrumbHTML();
   $("#breadcrumbs").classList.toggle("hidden", state.section !== "files" && !state.query.trim());
-  $(".nav-item").forEach(item => {
+  $$(".nav-item").forEach(item => {
     const selected = item.dataset.section === state.section && !state.query.trim();
     item.toggleAttribute("selected", selected);
     item.classList.toggle("active", selected);
@@ -315,7 +315,7 @@ function render() {
   $("#sort-select").value = state.sort;
   $("#selection-bar").classList.toggle("hidden", state.selected.size === 0 || state.section === "trash");
   $("#selection-label").textContent = state.selected.size + (state.selected.size === 1 ? " selected" : " selected");
-  $(".view-button").forEach(button => {
+  $$(".view-button").forEach(button => {
     const selected = button.dataset.view === state.view;
     button.toggleAttribute("selected", selected);
     button.setAttribute("variant", selected ? "tonal" : "standard");
