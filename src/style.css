@@ -798,3 +798,66 @@ m3e-button.primary-native { min-height: 39px; --m3e-filled-button-container-colo
   m3e-dialog.preview-panel .preview-header { padding: 11px; gap: 9px; }
   m3e-dialog.preview-panel .preview-content { min-height: 260px; height: 74vh; }
 }
+
+
+/* M3E component-specific refinements */
+m3e-heading.file-title-line,
+.file-title-line m3e-heading {
+  display: block;
+  max-width: 100%;
+  margin: 0 0 5px;
+  --m3e-heading-font-size: 12px;
+  --m3e-heading-font-weight: 700;
+  --m3e-heading-line-height: 1.3;
+  --m3e-heading-tracking: -.01em;
+}
+m3e-heading.list-entry-name {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  --m3e-heading-font-size: 12px;
+  --m3e-heading-font-weight: 700;
+  --m3e-heading-line-height: 1.4;
+}
+m3e-heading.preview-generic-title,
+.preview-generic m3e-heading {
+  display: block;
+  margin: 0 0 8px;
+  --m3e-heading-font-size: 19px;
+  --m3e-heading-font-weight: 800;
+}
+m3e-dialog.preview-panel {
+  display: block;
+  width: min(100%, 1060px);
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  animation: none;
+}
+m3e-dialog.preview-panel .preview-content {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  overflow: auto;
+  background: var(--bg);
+}
+m3e-card.file-card[actionable] { cursor: pointer; }
+m3e-card.list-row[actionable] { cursor: pointer; }
+m3e-card.file-card[actionable]:focus-visible,
+m3e-card.list-row[actionable]:focus-visible {
+  outline: 3px solid #a79ae7;
+  outline-offset: 3px;
+}
+.dark-theme m3e-dialog.preview-panel {
+  --m3e-dialog-container-color: var(--surface);
+  --m3e-dialog-color: var(--ink);
+}
