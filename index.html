@@ -36,7 +36,7 @@
             <div class="privacy-icon"><m3e-icon name="shield_lock"></m3e-icon></div>
             <strong>Your files stay yours</strong>
             <p>Everything is stored in this browser. Nothing is uploaded to a server.</p>
-            <span class="local-chip"><span></span> Local only</span>
+            <m3e-badge class="local-chip" size="small">Local only</m3e-badge>
           </m3e-card>
           <div class="storage-mini">
             <div class="storage-mini-top"><span>Storage used</span><strong id="storage-used-mini">0 B</strong></div>
@@ -56,7 +56,7 @@
           <m3e-search-bar class="search-box" clearable>
             <m3e-icon name="search" slot="leading"></m3e-icon>
             <input id="search-input" slot="input" type="search" placeholder="Search your files and folders" autocomplete="off" aria-label="Search your files and folders" />
-            <kbd slot="trailing">Ctrl K</kbd>
+            <m3e-badge slot="trailing" size="small">Ctrl K</m3e-badge>
           </m3e-search-bar>
           <div class="topbar-actions">
             <span class="local-status"><span></span> Stored on this device</span>
@@ -93,7 +93,7 @@
             </div>
           </div>
 
-          <div class="drop-banner" id="drop-banner"><m3e-icon name="cloud_upload"></m3e-icon><strong>Drop to add to this folder</strong></div>
+          <m3e-card class="drop-banner" id="drop-banner" variant="filled"><m3e-icon name="cloud_upload"></m3e-icon><strong>Drop to add to this folder</strong></m3e-card>
           <section id="selection-bar" class="selection-bar hidden" aria-live="polite">
             <span id="selection-label">0 selected</span>
             <m3e-button class="quiet-button" variant="text" data-action="select-all">Select all</m3e-button>
@@ -156,7 +156,7 @@
     </m3e-dialog>
 
     <m3e-snackbar id="toast"></m3e-snackbar>
-    <div id="drag-overlay" class="drag-overlay"><div><m3e-icon name="cloud_upload"></m3e-icon><h2>Drop files to add them</h2><p>Your files will be stored only in this browser.</p></div></div>
+    <m3e-card id="drag-overlay" class="drag-overlay" variant="filled"><div><m3e-icon name="cloud_upload"></m3e-icon><m3e-heading variant="title" size="large" level="2">Drop files to add them</m3e-heading><p>Your files will be stored only in this browser.</p></div></m3e-card>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
