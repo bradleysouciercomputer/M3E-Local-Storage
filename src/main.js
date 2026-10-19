@@ -974,6 +974,11 @@ $("#search-input").addEventListener("input", event => {
   state.openMenuId = null;
   render();
 });
+$("#search-bar").addEventListener("clear", () => {
+  $("#search-input").value = "";
+  state.query = "";
+  render();
+});
 
 $("#file-input").addEventListener("change", async event => {
   await uploadFiles(event.target.files);
