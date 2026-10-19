@@ -721,9 +721,9 @@ m3e-heading.page-title {
   margin: 0;
 }
 m3e-dialog.app-dialog {
-  --m3e-dialog-min-width: min(100vw - 36px, 455px);
-  --m3e-dialog-max-width: 455px;
-  --m3e-dialog-max-height: 90vh;
+  --m3e-dialog-min-width: min(455px, calc(100vw - 36px));
+  --m3e-dialog-max-width: min(455px, calc(100vw - 24px));
+  --m3e-dialog-max-height: min(90vh, calc(100dvh - 24px));
   --m3e-dialog-shape: 25px;
   --m3e-dialog-container-color: var(--surface);
   --m3e-dialog-color: var(--ink);
@@ -733,23 +733,23 @@ m3e-dialog.app-dialog {
   --m3e-dialog-header-color: var(--ink);
   --m3e-dialog-content-color: var(--ink-soft);
 }
-m3e-dialog.app-dialog .dialog-header { display: flex; padding: 24px 25px 17px; }
+m3e-dialog.app-dialog .dialog-header { display: flex; padding: 0; }
 m3e-dialog.app-dialog #dialog-body {
   max-height: 60vh;
   overflow: auto;
-  padding: 0 25px 12px;
+  padding: 0;
 }
 m3e-dialog.app-dialog .dialog-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
   margin-top: 10px;
-  padding: 0 25px 22px;
+  padding: 0;
 }
 m3e-dialog.preview-panel {
-  --m3e-dialog-min-width: min(92vw, 520px);
-  --m3e-dialog-max-width: 1060px;
-  --m3e-dialog-max-height: 90vh;
+  --m3e-dialog-min-width: min(520px, calc(100vw - 24px));
+  --m3e-dialog-max-width: min(1060px, calc(100vw - 24px));
+  --m3e-dialog-max-height: min(90vh, calc(100dvh - 24px));
   --m3e-dialog-shape: 22px;
   --m3e-dialog-container-color: var(--surface);
   --m3e-dialog-color: var(--ink);
@@ -757,7 +757,7 @@ m3e-dialog.preview-panel {
   --m3e-dialog-scrim-opacity: 1;
 }
 m3e-dialog.preview-panel .preview-header { display: flex; align-items: center; gap: 13px; padding: 15px 19px; }
-m3e-dialog.preview-panel .preview-content { height: min(74vh, 720px); min-height: 320px; }
+m3e-dialog.preview-panel .preview-content { height: min(66vh, 720px); min-height: min(320px, 44vh); }
 m3e-snackbar#toast { --m3e-snackbar-container-color: var(--surface-raised); --m3e-snackbar-label-color: var(--ink); }
 m3e-button.primary-native { min-height: 39px; --m3e-filled-button-container-color: var(--primary); --m3e-filled-button-label-text-color: #fff; }
 .dark-theme m3e-card.file-card {
@@ -792,11 +792,11 @@ m3e-button.primary-native { min-height: 39px; --m3e-filled-button-container-colo
     grid-template-columns: minmax(210px,1fr) 80px 68px 75px 62px;
     gap: 8px;
   }
-  m3e-dialog.app-dialog .dialog-header { padding: 21px 20px 15px; }
-  m3e-dialog.app-dialog #dialog-body { padding: 0 20px 12px; }
-  m3e-dialog.app-dialog .dialog-actions { padding: 0 20px 20px; }
-  m3e-dialog.preview-panel .preview-header { padding: 11px; gap: 9px; }
-  m3e-dialog.preview-panel .preview-content { min-height: 260px; height: 74vh; }
+  m3e-dialog.app-dialog .dialog-header { padding: 0; }
+  m3e-dialog.app-dialog #dialog-body { padding: 0; }
+  m3e-dialog.app-dialog .dialog-actions { padding: 0; }
+  m3e-dialog.preview-panel .preview-header { padding: 0; gap: 9px; }
+  m3e-dialog.preview-panel .preview-content { min-height: min(250px, 44vh); height: 66vh; }
 }
 
 
@@ -830,11 +830,13 @@ m3e-heading.preview-generic-title,
   --m3e-heading-font-size: 19px;
   --m3e-heading-font-weight: 800;
 }
+/* Keep M3E's dialog host boxless; the library positions its internal surface. */
 m3e-dialog.preview-panel {
-  display: block;
-  width: min(100%, 1060px);
+  display: contents;
+  width: auto;
   height: auto;
   min-height: 0;
+  max-width: none;
   overflow: visible;
   padding: 0;
   border: 0;
@@ -860,4 +862,151 @@ m3e-card.list-row[actionable]:focus-visible {
 .dark-theme m3e-dialog.preview-panel {
   --m3e-dialog-container-color: var(--surface);
   --m3e-dialog-color: var(--ink);
+}
+
+
+/* Layout fixes for slotted M3E components: layout belongs on the real slotted
+   wrapper, not on the custom-element host's shadow-DOM box. */
+m3e-card.list-row {
+  display: block;
+  min-width: 0;
+  min-height: 63px;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  --m3e-card-padding: 0;
+  --m3e-card-shape: 0px;
+  --m3e-outlined-card-container-color: var(--surface);
+  --m3e-outlined-card-text-color: var(--ink);
+  --m3e-outlined-card-outline-color: transparent;
+  --m3e-outlined-card-outline-thickness: 0;
+}
+m3e-card.list-row .list-row-content {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(75px, .26fr) minmax(65px, .22fr) minmax(100px, .35fr) 72px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  min-height: 63px;
+  padding: 8px 17px;
+}
+m3e-card.list-row .list-name-cell { min-width: 0; }
+m3e-card.list-row .list-entry-name { flex: 1 1 auto; }
+m3e-card.list-row > .context-menu { z-index: 6; }
+
+.drop-banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  width: 100%;
+  min-width: 0;
+  text-align: center;
+}
+.drop-banner-content m3e-icon { flex: 0 0 auto; }
+.bottom-note-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+.bottom-note-content > span { flex: 1 1 auto; min-width: 0; }
+.bottom-note-content .text-action { flex: 0 0 auto; }
+m3e-card.drag-overlay > div {
+  width: min(100%, 600px);
+  margin: auto;
+  align-self: center;
+  text-align: center;
+}
+
+/* Use M3E's documented typography token names so component typography customizes correctly. */
+m3e-heading.page-title {
+  --md-sys-typescale-headline-large-font-size: clamp(28px, 3vw, 38px);
+  --md-sys-typescale-headline-large-font-weight: 800;
+  --md-sys-typescale-headline-large-line-height: 1.16;
+  --md-sys-typescale-headline-large-tracking: -.045em;
+}
+.file-title-line m3e-heading {
+  --md-sys-typescale-title-small-font-size: 12px;
+  --md-sys-typescale-title-small-font-weight: 700;
+  --md-sys-typescale-title-small-line-height: 1.3;
+  --md-sys-typescale-title-small-tracking: -.01em;
+}
+m3e-heading.list-entry-name {
+  --md-sys-typescale-title-small-font-size: 12px;
+  --md-sys-typescale-title-small-font-weight: 700;
+  --md-sys-typescale-title-small-line-height: 1.4;
+  --md-sys-typescale-title-small-tracking: -.01em;
+}
+.files-heading m3e-heading {
+  --md-sys-typescale-title-large-font-size: 17px;
+  --md-sys-typescale-title-large-font-weight: 800;
+  --md-sys-typescale-title-large-line-height: 1.35;
+  --md-sys-typescale-title-large-tracking: -.03em;
+}
+m3e-heading#empty-title {
+  --md-sys-typescale-title-large-font-size: 19px;
+  --md-sys-typescale-title-large-font-weight: 800;
+  --md-sys-typescale-title-large-line-height: 1.35;
+  --md-sys-typescale-title-large-tracking: -.035em;
+}
+m3e-heading#dialog-title {
+  --md-sys-typescale-title-large-font-size: 23px;
+  --md-sys-typescale-title-large-font-weight: 800;
+  --md-sys-typescale-title-large-line-height: 1.25;
+  --md-sys-typescale-title-large-tracking: -.04em;
+}
+m3e-heading#preview-title {
+  --md-sys-typescale-title-medium-font-size: 15px;
+  --md-sys-typescale-title-medium-font-weight: 800;
+  --md-sys-typescale-title-medium-line-height: 1.4;
+  --md-sys-typescale-title-medium-tracking: -.02em;
+}
+m3e-heading.preview-generic-title {
+  --md-sys-typescale-title-large-font-size: 19px;
+  --md-sys-typescale-title-large-font-weight: 800;
+  --md-sys-typescale-title-large-line-height: 1.35;
+  --md-sys-typescale-title-large-tracking: -.035em;
+}
+.drag-overlay m3e-heading {
+  --md-sys-typescale-title-large-font-size: 25px;
+  --md-sys-typescale-title-large-font-weight: 800;
+  --md-sys-typescale-title-large-line-height: 1.2;
+}
+
+@media (min-width: 721px) and (max-width: 980px) {
+  .list-header,
+  m3e-card.list-row .list-row-content {
+    grid-template-columns: minmax(160px, 1fr) 70px 65px 78px;
+    gap: 8px;
+  }
+  .list-header > :nth-child(4),
+  m3e-card.list-row .list-row-content > .list-date { display: none; }
+  m3e-card.list-row .list-row-content > .list-actions {
+    grid-column: 4;
+    grid-row: 1;
+  }
+}
+@media (max-width: 720px) {
+  .list-header {
+    min-width: 610px;
+    grid-template-columns: minmax(210px, 1fr) 80px 68px 75px 62px;
+    gap: 8px;
+  }
+  m3e-card.list-row { min-width: 610px; }
+  m3e-card.list-row .list-row-content {
+    min-width: 610px;
+    grid-template-columns: minmax(210px, 1fr) 80px 68px 75px 62px;
+    gap: 8px;
+  }
+  .list-header > :nth-child(4),
+  m3e-card.list-row .list-row-content > .list-date { display: block; }
+  m3e-card.list-row .list-row-content > .list-actions {
+    grid-column: auto;
+    grid-row: auto;
+  }
+  m3e-dialog.preview-panel .preview-header { padding: 0; }
 }

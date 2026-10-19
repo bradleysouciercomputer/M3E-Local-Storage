@@ -287,16 +287,17 @@ function renderListRow(entry) {
   const parent = entry.parentId && (state.section === "recent" || state.section === "favorites" || state.query.trim()) ? getEntry(entry.parentId) : null;
   const actions = isTrash
     ? '<m3e-icon-button class="card-action" variant="standard" data-action="restore" data-id="' + entry.id + '" title="Restore" aria-label="Restore"><m3e-icon name="restore"></m3e-icon></m3e-icon-button><m3e-icon-button class="card-action" variant="standard" data-action="delete-permanent" data-id="' + entry.id + '" title="Delete forever" aria-label="Delete forever"><m3e-icon name="delete_forever"></m3e-icon></m3e-icon-button>'
-    : '<m3e-icon-button class="card-action ' + (entry.favorite ? "starred" : "") + '" variant="standard" toggle ' + (entry.favorite ? "selected" : "") + ' data-action="toggle-favorite" data-id="' + entry.id + '" title="Favorite" aria-label="Favorite"><m3e-icon name="' + (entry.favorite ? "star" : "star_border") + '"></m3e-icon></m3e-icon-button>' + itemMenuTrigger(entry);
+    : '<m3e-icon-button class="card-action ' + (entry.favorite ? "starred" : "") + '" variant="standard" toggle ' + (entry.favorite ? "selected" : "") + ' data-action="toggle-favorite" data-id="' + entry.id + '" title="' + (entry.favorite ? "Remove favorite" : "Add favorite") + '" aria-label="' + (entry.favorite ? "Remove favorite" : "Add favorite") + '"><m3e-icon name="' + (entry.favorite ? "star" : "star_border") + '"></m3e-icon></m3e-icon-button>' + itemMenuTrigger(entry);
   return '<m3e-card class="list-row ' + (selected ? "is-selected" : "") + '" variant="outlined" ' +
     (isTrash ? "" : 'actionable data-action="open-entry" ') +
     'data-entry-card data-id="' + entry.id + '" data-type="' + entry.type + '" draggable="true">' +
+    '<div class="list-row-content">' +
     '<div class="list-name-cell"><div class="select-wrap"><m3e-checkbox class="select-item" data-select="' + entry.id + '" aria-label="Select ' + escapeHTML(entry.name) + '" ' + (selected ? "checked" : "") + '></m3e-checkbox></div><span class="list-file-icon ' + (folder ? "folder-color" : "") + '"><m3e-icon name="' + iconFor(entry) + '"></m3e-icon></span><m3e-heading class="list-entry-name" variant="title" size="small" level="3">' + escapeHTML(entry.name) + '</m3e-heading>' + (parent ? '<span class="list-parent">' + escapeHTML(parent.name) + '</span>' : "") + '</div>' +
     '<span class="list-type">' + escapeHTML(fileKind(entry)) + '</span><span class="list-size">' + (folder ? "—" : escapeHTML(formatBytes(entry.size || 0))) + '</span><span class="list-date">' + escapeHTML(formatDate(entry.updatedAt || entry.createdAt)) + '</span><div class="list-actions">' + actions + '</div>' +
+    '</div>' +
     (isTrash ? "" : itemMenuMarkup(entry, false)) +
     '</m3e-card>';
 }
-
 function render() {
   const meta = labels[state.section] || labels.files;
   const currentFolder = state.section === "files" && state.folderId ? getEntry(state.folderId) : null;
@@ -727,7 +728,7 @@ async function openPreview(id) {
 }
 
 function previewDetailsHTML(entry) {
-  return '<div class="preview-generic"><div class="generic-file-art"><m3e-icon name="' + iconFor(entry) + '"></m3e-icon></div><h3>' + escapeHTML(entry.name) + '</h3><p>This file type cannot be previewed here, but the original file is saved locally and can be downloaded.</p><div class="detail-grid"><span>File type</span><strong>' + escapeHTML(fileKind(entry)) + '</strong><span>Size</span><strong>' + escapeHTML(formatBytes(entry.size || 0)) + '</strong><span>Last updated</span><strong>' + escapeHTML(formatDate(entry.updatedAt || entry.createdAt)) + '</strong></div><m3e-button class="primary-native" variant="filled" data-action="download-preview"><m3e-icon slot="icon" name="download"></m3e-icon> Download file</m3e-button></div>';
+  return '<div class="preview-generic"><div class="generic-file-art"><m3e-icon name="' + iconFor(entry) + '"></m3e-icon></div><m3e-heading class="preview-generic-title" variant="title" size="large" level="3">' + escapeHTML(entry.name) + '</m3e-heading><p>This file type cannot be previewed here, but the original file is saved locally and can be downloaded.</p><div class="detail-grid"><span>File type</span><strong>' + escapeHTML(fileKind(entry)) + '</strong><span>Size</span><strong>' + escapeHTML(formatBytes(entry.size || 0)) + '</strong><span>Last updated</span><strong>' + escapeHTML(formatDate(entry.updatedAt || entry.createdAt)) + '</strong></div><m3e-button class="primary-native" variant="filled" data-action="download-preview"><m3e-icon slot="icon" name="download"></m3e-icon> Download file</m3e-button></div>';
 }
 
 function toggleFavorite(id) {
@@ -849,7 +850,9 @@ async function handleAction(action, id, button) {
       case "toggle-theme":
         state.dark = !state.dark;
         document.documentElement.classList.toggle("dark-theme", state.dark);
-        button.setAttribute("aria-label", state.dark ? "Switch to light mode" : "Toggle dark mode");
+        button.setAttribute("aria-label", state.dark ? "Switch to light mode" : "Switch to dark mode");
+        const themeIcon = button.querySelector("m3e-icon");
+        if (themeIcon) themeIcon.setAttribute("name", state.dark ? "light_mode" : "dark_mode");
         break;
       case "export-backup":
         await exportBackup();
