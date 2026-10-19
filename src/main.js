@@ -1062,19 +1062,37 @@ mainPanel.addEventListener("drop", async event => {
 });
 
 async function init() {
+  // Test the storage API separately from the first UI render so a UI bug is
+  // never misreported as an IndexedDB failure.
   try {
+    if (!("indexedDB" in window) || !window.indexedDB) {
+      throw new Error("This browser or browsing mode has disabled IndexedDB.");
+    }
     state.db = await openDatabase();
+  } catch (error) {
+    $("#empty-state").classList.remove("hidden");
+    $("#files-container").classList.add("hidden");
+    $("#empty-title").textContent = "Browser storage is unavailable";
+    $("#empty-description").textContent = error.message || "IndexedDB could not be opened. Enable site storage in your browser settings, then reload.";
+    $("#empty-state .empty-actions").classList.add("hidden");
+    showToast(error.message || "Could not open local storage", "error");
+    console.error("[M3E Local Storage] IndexedDB initialization failed:", error);
+    return;
+  }
+
+  try {
     await refresh();
-    if (navigator.storage && navigator.storage.persist) {
+    if (navigator.storage && typeof navigator.storage.persist === "function") {
       navigator.storage.persist().catch(() => {});
     }
   } catch (error) {
     $("#empty-state").classList.remove("hidden");
     $("#files-container").classList.add("hidden");
-    $("#empty-title").textContent = "Browser storage is unavailable";
-    $("#empty-description").textContent = "This app needs IndexedDB to keep files on this device. Try a current browser with site storage enabled, then reload.";
-    $(".empty-actions").classList.add("hidden");
-    showToast(error.message || "Could not start local storage", "error");
+    $("#empty-title").textContent = "The workspace could not load";
+    $("#empty-description").textContent = "Browser storage opened successfully, but the workspace failed to render. Reload the page; if this persists, open the browser console for details.";
+    $("#empty-state .empty-actions").classList.add("hidden");
+    showToast(error.message || "Could not load the workspace", "error");
+    console.error("[M3E Local Storage] Workspace initialization failed:", error);
   }
 }
 
