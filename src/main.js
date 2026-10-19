@@ -287,11 +287,20 @@ function render() {
   $("#content-description").textContent = state.query.trim() ? "Searches file and folder names on this device" : meta.desc;
   $("#breadcrumbs").innerHTML = breadcrumbHTML();
   $("#breadcrumbs").classList.toggle("hidden", state.section !== "files" && !state.query.trim());
-  $$(".nav-item").forEach(button => button.classList.toggle("active", button.dataset.section === state.section && !state.query.trim()));
+  $(".nav-item").forEach(item => {
+    const selected = item.dataset.section === state.section && !state.query.trim();
+    item.toggleAttribute("selected", selected);
+    item.classList.toggle("active", selected);
+  });
   $("#sort-select").value = state.sort;
   $("#selection-bar").classList.toggle("hidden", state.selected.size === 0 || state.section === "trash");
   $("#selection-label").textContent = state.selected.size + (state.selected.size === 1 ? " selected" : " selected");
-  $$(".view-button").forEach(button => button.classList.toggle("selected", button.dataset.view === state.view));
+  $(".view-button").forEach(button => {
+    const selected = button.dataset.view === state.view;
+    button.toggleAttribute("selected", selected);
+    button.setAttribute("variant", selected ? "tonal" : "standard");
+    button.classList.toggle("selected", selected);
+  });
 
   const entries = getVisibleEntries();
   $("#item-count-label").textContent = entries.length + (entries.length === 1 ? " item" : " items");
@@ -356,12 +365,18 @@ async function updateStorage() {
 }
 
 function showToast(message, kind) {
-  const toast = $("#toast");
-  $("#toast-message").textContent = message;
-  toast.classList.toggle("toast-error", kind === "error");
-  toast.classList.add("show");
-  clearTimeout(showToast.timer);
-  showToast.timer = setTimeout(() => toast.classList.remove("show"), 3100);
+  const text = kind === "error" ? "Something needs attention: " + message : message;
+  try {
+    if (globalThis.M3eSnackbar && typeof globalThis.M3eSnackbar.open === "function") {
+      globalThis.M3eSnackbar.open(text);
+      return;
+    }
+  } catch (_) {}
+  const snackbar = $("#toast");
+  if (snackbar) {
+    snackbar.textContent = text;
+    snackbar.open = true;
+  }
 }
 
 function navigate(section, folderId) {
@@ -380,64 +395,83 @@ function showDialog(kind, data) {
   data = data || {};
   state.openMenuId = null;
   state.dialog = { kind: kind, data: data };
-  const panel = $("#dialog-panel");
+  const panel = $("#app-dialog");
   $("#dialog-kicker").textContent = "M3E LOCAL STORAGE";
   $("#dialog-body").innerHTML = "";
-  let title = "Create folder";
-  let submit = "Create";
+  let title = "Confirm action";
+  let submit = "Continue";
   let body = "";
+
   if (kind === "folder") {
     title = "Create a folder";
     submit = "Create folder";
-    body = '<p class="dialog-copy">Give this folder a name. It will be created ' + (state.section === "files" && state.folderId ? "inside <strong>" + escapeHTML(getEntry(state.folderId)?.name || "this folder") + "</strong>" : "in <strong>All files</strong>") + '.</p><label class="field-label" for="dialog-input">Folder name</label><input id="dialog-input" name="name" class="dialog-input" maxlength="160" required placeholder="e.g. Design references" autocomplete="off"><p class="field-hint">You can rename or move it later.</p>';
+    body = '<p class="dialog-copy">Give this folder a name. It will be created ' +
+      (state.section === "files" && state.folderId
+        ? "inside <strong>" + escapeHTML(getEntry(state.folderId)?.name || "this folder") + "</strong>"
+        : "in <strong>All files</strong>") +
+      '.</p><m3e-form-field class="dialog-field" variant="outlined"><label slot="label" for="dialog-input">Folder name</label><input id="dialog-input" name="name" maxlength="160" required placeholder="e.g. Design references" autocomplete="off"><span slot="hint">You can rename or move it later.</span></m3e-form-field>';
   } else if (kind === "rename") {
     title = "Rename item";
     submit = "Save name";
-    body = '<p class="dialog-copy">Choose a new name for <strong>' + escapeHTML(data.entry.name) + '</strong>.</p><label class="field-label" for="dialog-input">Name</label><input id="dialog-input" name="name" class="dialog-input" maxlength="240" required value="' + escapeHTML(data.entry.name) + '" autocomplete="off">';
+    body = '<p class="dialog-copy">Choose a new name for <strong>' + escapeHTML(data.entry.name) +
+      '</strong>.</p><m3e-form-field class="dialog-field" variant="outlined"><label slot="label" for="dialog-input">Name</label><input id="dialog-input" name="name" maxlength="240" required value="' +
+      escapeHTML(data.entry.name) + '" autocomplete="off"></m3e-form-field>';
   } else if (kind === "move") {
     title = "Move to folder";
     submit = "Move here";
     const movingIds = data.ids || [data.entry.id];
     const excluded = new Set(movingIds);
     movingIds.forEach(id => descendantsOf(id).forEach(entry => excluded.add(entry.id)));
-    const options = activeFolders().filter(folder => !excluded.has(folder.id)).sort((a, b) => a.name.localeCompare(b.name)).map(folder => {
-      const path = folderPath(folder.id).map(item => item.name).join(" / ");
-      return '<option value="' + folder.id + '"' + (folder.id === state.folderId ? " selected" : "") + '>' + escapeHTML(path) + '</option>';
-    }).join("");
-    body = '<p class="dialog-copy">Choose where to move ' + movingIds.length + (movingIds.length === 1 ? " item" : " items") + '. Items remain stored locally; moving only changes their folder.</p><label class="field-label" for="dialog-folder">Destination folder</label><select id="dialog-folder" class="dialog-input" name="folder"><option value="">All files (root)</option>' + options + '</select>';
+    const options = activeFolders()
+      .filter(folder => !excluded.has(folder.id))
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(folder => {
+        const path = folderPath(folder.id).map(item => item.name).join(" / ");
+        return '<m3e-option value="' + escapeHTML(folder.id) + '">' + escapeHTML(path) + '</m3e-option>';
+      }).join("");
+    body = '<p class="dialog-copy">Choose where to move ' + movingIds.length +
+      (movingIds.length === 1 ? " item" : " items") +
+      '. Items remain stored locally; moving only changes their folder.</p><m3e-form-field class="dialog-field" variant="outlined"><label slot="label" for="dialog-folder">Destination folder</label><m3e-select id="dialog-folder" value="' +
+      escapeHTML(state.folderId || "") + '"><m3e-option value="">All files (root)</m3e-option>' + options +
+      '</m3e-select></m3e-form-field>';
   } else if (kind === "confirmTrash") {
     title = "Move to trash?";
     submit = "Move to trash";
-    body = '<p class="dialog-copy">Move ' + data.ids.length + (data.ids.length === 1 ? " item" : " items") + ' to trash? You can restore them later. Folder contents will move with their folder.</p>';
+    body = '<p class="dialog-copy">Move ' + data.ids.length +
+      (data.ids.length === 1 ? " item" : " items") +
+      ' to trash? You can restore them later. Folder contents will move with their folder.</p>';
   } else if (kind === "confirmDelete") {
     title = "Delete permanently?";
     submit = "Delete forever";
-    body = '<p class="dialog-copy">This permanently removes <strong>' + escapeHTML(data.entry.name) + '</strong> and its contents from this browser. <strong>This cannot be undone.</strong></p>';
+    body = '<p class="dialog-copy">This permanently removes <strong>' + escapeHTML(data.entry.name) +
+      '</strong> and its contents from this browser. <strong>This cannot be undone.</strong></p>';
   } else if (kind === "storageInfo") {
     title = "How local storage works";
     submit = "Got it";
-    body = '<div class="storage-explainer"><div class="explain-icon"><m3e-icon name="shield_lock"></m3e-icon></div><p>Your files are saved in this browser using IndexedDB. This app does not upload file contents to a server or require an account.</p><p>Local browser storage can be cleared by browser settings, and storage limits depend on your browser and device. Use <strong>Export backup</strong> to save a portable copy before clearing browser data or changing devices.</p><p>Closing the tab will not remove your files, but data is tied to this browser and site origin.</p></div>';
+    body = '<m3e-card class="storage-explainer" variant="filled"><div class="explain-icon"><m3e-icon name="shield_lock"></m3e-icon></div><p>Your files are saved in this browser using IndexedDB. This app does not upload file contents to a server or require an account.</p><p>Local browser storage can be cleared by browser settings, and storage limits depend on your browser and device. Use <strong>Export backup</strong> to save a portable copy before clearing browser data or changing devices.</p><p>Closing the tab will not remove your files, but data is tied to this browser and site origin.</p></m3e-card>';
   } else {
-    title = "Confirm action";
-    submit = "Continue";
     body = '<p class="dialog-copy">Continue with this action?</p>';
   }
+
   $("#dialog-title").textContent = title;
   $("#dialog-submit").textContent = submit;
+  $("#dialog-submit").setAttribute("variant", "filled");
   $("#dialog-body").innerHTML = body;
-  $("#dialog-backdrop").classList.remove("hidden");
+  panel.dataset.kind = kind;
+  panel.open = true;
+
   setTimeout(() => {
     const input = $("#dialog-input") || $("#dialog-folder");
-    if (input) { input.focus(); if (input.select) input.select(); }
-    else $("#dialog-submit").focus();
-  }, 20);
-  if (kind === "confirmDelete") $("#dialog-submit").setAttribute("variant", "filled");
-  else $("#dialog-submit").setAttribute("variant", "filled");
-  panel.dataset.kind = kind;
+    if (input && typeof input.focus === "function") {
+      input.focus();
+      if (typeof input.select === "function") input.select();
+    }
+  }, 50);
 }
 
 function closeDialog() {
-  $("#dialog-backdrop").classList.add("hidden");
+  const panel = $("#app-dialog");
+  if (panel) panel.open = false;
   state.dialog = null;
 }
 
@@ -622,7 +656,8 @@ async function downloadEntry(id) {
 }
 
 function closePreview() {
-  $("#preview-backdrop").classList.add("hidden");
+  const previewDialog = $("#preview-dialog");
+  if (previewDialog) previewDialog.open = false;
   $("#preview-content").innerHTML = "";
   if (state.previewUrl) URL.revokeObjectURL(state.previewUrl);
   state.previewUrl = null;
@@ -666,7 +701,7 @@ async function openPreview(id) {
   } else {
     content.innerHTML = previewDetailsHTML(entry);
   }
-  $("#preview-backdrop").classList.remove("hidden");
+  $("#preview-dialog").open = true;
   const opened = getEntry(id);
   if (opened) { opened.updatedAt = Date.now(); await dbPut(opened); await refresh(); }
 }
@@ -811,6 +846,9 @@ async function handleAction(action, id, button) {
       case "close-preview":
         closePreview();
         break;
+      case "dialog-submit":
+        await handleDialogSubmit({ preventDefault() {} });
+        break;
       case "download-preview":
         if (state.previewId) await downloadEntry(state.previewId);
         break;
@@ -823,10 +861,6 @@ async function handleAction(action, id, button) {
         } else {
           await openPreview(entry.id);
         }
-        break;
-      case "item-menu":
-        state.openMenuId = state.openMenuId === id ? null : id;
-        render();
         break;
       case "rename":
         if (entry) showDialog("rename", { entry: entry });
@@ -899,10 +933,7 @@ document.addEventListener("click", event => {
     render();
     return;
   }
-  if (!event.target.closest(".context-menu") && !event.target.closest("[data-action='item-menu']") && state.openMenuId) {
-    state.openMenuId = null;
-    render();
-  }
+
 });
 
 document.addEventListener("change", event => {
@@ -932,12 +963,21 @@ $("#backup-input").addEventListener("change", async event => {
   event.target.value = "";
 });
 
-$("#dialog-form").addEventListener("submit", handleDialogSubmit);
-$("#dialog-backdrop").addEventListener("click", event => {
-  if (event.target === $("#dialog-backdrop")) closeDialog();
+$("#app-dialog").addEventListener("closed", () => {
+  state.dialog = null;
 });
-$("#preview-backdrop").addEventListener("click", event => {
-  if (event.target === $("#preview-backdrop")) closePreview();
+$("#preview-dialog").addEventListener("closed", () => {
+  if (state.previewUrl) URL.revokeObjectURL(state.previewUrl);
+  state.previewUrl = null;
+  state.previewId = null;
+  $("#preview-content").innerHTML = "";
+});
+document.addEventListener("keydown", event => {
+  if (event.key === "Enter" && !event.shiftKey && $("#app-dialog").open &&
+      (event.target.id === "dialog-input" || event.target.id === "dialog-folder")) {
+    event.preventDefault();
+    handleDialogSubmit({ preventDefault() {} });
+  }
 });
 
 document.addEventListener("keydown", event => {
@@ -945,11 +985,11 @@ document.addEventListener("keydown", event => {
     event.preventDefault();
     $("#search-input").focus();
   } else if (event.key === "Escape") {
-    if (!$("#preview-backdrop").classList.contains("hidden")) closePreview();
-    else if (!$("#dialog-backdrop").classList.contains("hidden")) closeDialog();
+    if ($("#preview-dialog").open) closePreview();
+    else if ($("#app-dialog").open) closeDialog();
     else if (state.openMenuId) { state.openMenuId = null; render(); }
     else if (state.selected.size) { state.selected.clear(); render(); }
-  } else if ((event.key === "Delete" || event.key === "Backspace") && state.selected.size && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) && state.section !== "trash") {
+  } else if ((event.key === "Delete" || event.key === "Backspace") && state.selected.size && !/INPUT|TEXTAREA|SELECT|M3E-SELECT|M3E-CHECKBOX/.test(document.activeElement.tagName) && state.section !== "trash") {
     event.preventDefault();
     showDialog("confirmTrash", { ids: Array.from(state.selected) });
   }
