@@ -1,8 +1,8 @@
 name: Build and deploy M3E Local Storage
 
+# Automatic publishing is disabled while this site is offline.
+# Manual runs remain available if the site is intentionally brought back.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 # Keep deployment jobs ordered; newer pushes may replace an older in-progress deployment.
