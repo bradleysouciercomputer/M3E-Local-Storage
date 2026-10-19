@@ -232,7 +232,7 @@ function renderGridCard(entry) {
   const folder = entry.type === "folder";
   const isTrash = state.section === "trash";
   const selected = state.selected.has(entry.id);
-  const childCount = folder ? directChildren(entry.id, false).length : 0;
+  const childCount = folder ? directChildren(entry.id, isTrash).length : 0;
   const details = folder ? (childCount + (childCount === 1 ? " item" : " items")) : formatBytes(entry.size || 0);
   const menu = state.openMenuId === entry.id;
   let menuItems = "";
@@ -376,6 +376,7 @@ function navigate(section, folderId) {
 
 function showDialog(kind, data) {
   data = data || {};
+  state.openMenuId = null;
   state.dialog = { kind: kind, data: data };
   const panel = $("#dialog-panel");
   $("#dialog-kicker").textContent = "M3E LOCAL STORAGE";
@@ -781,6 +782,7 @@ async function handleAction(action, id, button) {
         navigate("files", null);
         break;
       case "new-folder":
+        if (state.section !== "files" || state.query.trim()) navigate("files", null);
         showDialog("folder");
         break;
       case "upload":
