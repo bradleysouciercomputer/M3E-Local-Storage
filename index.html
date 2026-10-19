@@ -13,39 +13,39 @@
   <body>
     <div class="app-shell">
       <aside class="sidebar" aria-label="Main navigation">
-        <a class="brand" href="#" aria-label="M3E Local Storage home" data-action="home">
+        <m3e-button class="brand" variant="text" aria-label="M3E Local Storage home" data-action="home">
           <span class="brand-mark"><m3e-icon name="folder_open"></m3e-icon></span>
           <span class="brand-copy"><strong>M3E</strong><small>Local Storage</small></span>
-        </a>
+        </m3e-button>
         <m3e-button class="sidebar-create" variant="filled" data-action="new-folder">
           <m3e-icon slot="icon" name="create_new_folder"></m3e-icon>
           New folder
         </m3e-button>
         <div class="nav-caption">WORKSPACE</div>
-        <nav class="nav-list">
-          <button class="nav-item active" data-section="files"><m3e-icon name="folder"></m3e-icon><span>All files</span><span class="nav-count" id="count-files">0</span></button>
-          <button class="nav-item" data-section="recent"><m3e-icon name="schedule"></m3e-icon><span>Recent</span></button>
-          <button class="nav-item" data-section="favorites"><m3e-icon name="star"></m3e-icon><span>Favorites</span></button>
-        </nav>
+        <m3e-nav-menu class="nav-list">
+          <m3e-nav-menu-item class="nav-item" data-section="files" selected><m3e-icon slot="icon" name="folder"></m3e-icon><span slot="label">All files</span><span slot="badge" id="count-files">0</span></m3e-nav-menu-item>
+          <m3e-nav-menu-item class="nav-item" data-section="recent"><m3e-icon slot="icon" name="schedule"></m3e-icon><span slot="label">Recent</span></m3e-nav-menu-item>
+          <m3e-nav-menu-item class="nav-item" data-section="favorites"><m3e-icon slot="icon" name="star"></m3e-icon><span slot="label">Favorites</span></m3e-nav-menu-item>
+        </m3e-nav-menu>
         <div class="nav-caption nav-caption-spaced">LIBRARY</div>
-        <nav class="nav-list">
-          <button class="nav-item" data-section="trash"><m3e-icon name="delete_outline"></m3e-icon><span>Trash</span><span class="nav-count" id="count-trash">0</span></button>
-        </nav>
+        <m3e-nav-menu class="nav-list">
+          <m3e-nav-menu-item class="nav-item" data-section="trash"><m3e-icon slot="icon" name="delete_outline"></m3e-icon><span slot="label">Trash</span><span slot="badge" id="count-trash">0</span></m3e-nav-menu-item>
+        </m3e-nav-menu>
         <div class="sidebar-bottom">
-          <div class="privacy-card">
+          <m3e-card class="privacy-card" variant="filled">
             <div class="privacy-icon"><m3e-icon name="shield_lock"></m3e-icon></div>
             <strong>Your files stay yours</strong>
             <p>Everything is stored in this browser. Nothing is uploaded to a server.</p>
             <span class="local-chip"><span></span> Local only</span>
-          </div>
+          </m3e-card>
           <div class="storage-mini">
             <div class="storage-mini-top"><span>Storage used</span><strong id="storage-used-mini">0 B</strong></div>
             <div class="storage-track"><span id="storage-fill-mini"></span></div>
             <small id="storage-limit-mini">In this browser</small>
           </div>
           <div class="sidebar-actions">
-            <button class="quiet-button" data-action="export-backup"><m3e-icon name="download"></m3e-icon> Export backup</button>
-            <button class="quiet-button" data-action="import-backup"><m3e-icon name="upload_file"></m3e-icon> Import backup</button>
+            <m3e-button class="quiet-button" variant="text" data-action="export-backup"><m3e-icon slot="icon" name="download"></m3e-icon> Export backup</m3e-button>
+            <m3e-button class="quiet-button" variant="text" data-action="import-backup"><m3e-icon slot="icon" name="upload_file"></m3e-icon> Import backup</m3e-button>
           </div>
         </div>
       </aside>
@@ -53,14 +53,14 @@
       <main class="main-panel">
         <header class="topbar">
           <div class="mobile-brand"><span class="brand-mark"><m3e-icon name="folder_open"></m3e-icon></span><strong>M3E Local Storage</strong></div>
-          <label class="search-box" for="search-input">
-            <m3e-icon name="search"></m3e-icon>
-            <input id="search-input" type="search" placeholder="Search your files and folders" autocomplete="off" aria-label="Search your files and folders" />
-            <kbd>Ctrl K</kbd>
-          </label>
+          <m3e-search-bar class="search-box" clearable>
+            <m3e-icon name="search" slot="leading"></m3e-icon>
+            <input id="search-input" slot="input" type="search" placeholder="Search your files and folders" autocomplete="off" aria-label="Search your files and folders" />
+            <kbd slot="trailing">Ctrl K</kbd>
+          </m3e-search-bar>
           <div class="topbar-actions">
             <span class="local-status"><span></span> Stored on this device</span>
-            <button class="icon-button" data-action="toggle-theme" aria-label="Toggle dark mode" title="Toggle dark mode"><m3e-icon name="dark_mode"></m3e-icon></button>
+            <m3e-icon-button class="icon-button" data-action="toggle-theme" aria-label="Toggle dark mode" title="Toggle dark mode"><m3e-icon name="dark_mode"></m3e-icon></m3e-icon-button>
           </div>
         </header>
 
@@ -68,7 +68,7 @@
           <div class="welcome-row">
             <div>
               <div class="eyebrow" id="section-eyebrow">YOUR PRIVATE WORKSPACE</div>
-              <h1 id="page-title">All files</h1>
+              <m3e-heading id="page-title" class="page-title" variant="headline" size="large" level="1">All files</m3e-heading>
               <p class="page-subtitle" id="page-subtitle">A calm place for everything on your device.</p>
             </div>
             <div class="welcome-actions">
@@ -81,41 +81,44 @@
             <div id="breadcrumbs" class="breadcrumbs" aria-label="Folder path"></div>
             <div class="breadcrumb-tools">
               <span id="item-count-label">0 items</span>
-              <select id="sort-select" class="sort-select" aria-label="Sort files">
-                <option value="name">Name</option>
-                <option value="updated">Recently updated</option>
-                <option value="size">Size</option>
-                <option value="type">File type</option>
-              </select>
+              <m3e-form-field class="sort-field" variant="outlined" hide-subscript="always">
+                <label slot="label" for="sort-select">Sort by</label>
+                <m3e-select id="sort-select" value="name" aria-label="Sort files">
+                  <m3e-option value="name">Name</m3e-option>
+                  <m3e-option value="updated">Recently updated</m3e-option>
+                  <m3e-option value="size">Size</m3e-option>
+                  <m3e-option value="type">File type</m3e-option>
+                </m3e-select>
+              </m3e-form-field>
             </div>
           </div>
 
           <div class="drop-banner" id="drop-banner"><m3e-icon name="cloud_upload"></m3e-icon><strong>Drop to add to this folder</strong></div>
           <section id="selection-bar" class="selection-bar hidden" aria-live="polite">
             <span id="selection-label">0 selected</span>
-            <button class="quiet-button" data-action="select-all">Select all</button>
-            <button class="quiet-button" data-action="move-selected"><m3e-icon name="drive_file_move"></m3e-icon> Move</button>
-            <button class="quiet-button" data-action="trash-selected"><m3e-icon name="delete_outline"></m3e-icon> Move to trash</button>
-            <button class="quiet-button" data-action="clear-selection">Cancel</button>
+            <m3e-button class="quiet-button" variant="text" data-action="select-all">Select all</m3e-button>
+            <m3e-button class="quiet-button" variant="text" data-action="move-selected"><m3e-icon slot="icon" name="drive_file_move"></m3e-icon> Move</m3e-button>
+            <m3e-button class="quiet-button" variant="text" data-action="trash-selected"><m3e-icon slot="icon" name="delete_outline"></m3e-icon> Move to trash</m3e-button>
+            <m3e-button class="quiet-button" variant="text" data-action="clear-selection">Cancel</m3e-button>
           </section>
 
           <div class="files-heading">
-            <div><h2 id="content-heading">Your files</h2><span id="content-description">Folders and files saved locally</span></div>
+            <div><m3e-heading id="content-heading" variant="title" size="large" level="2">Your files</m3e-heading><span id="content-description">Folders and files saved locally</span></div>
             <div class="view-switch" role="group" aria-label="View mode">
-              <button class="view-button selected" data-view="grid" aria-label="Grid view" title="Grid view"><m3e-icon name="grid_view"></m3e-icon></button>
-              <button class="view-button" data-view="list" aria-label="List view" title="List view"><m3e-icon name="view_list"></m3e-icon></button>
+              <m3e-icon-button class="view-button" variant="tonal" selected toggle data-view="grid" aria-label="Grid view" title="Grid view"><m3e-icon name="grid_view"></m3e-icon></m3e-icon-button>
+              <m3e-icon-button class="view-button" variant="standard" toggle data-view="list" aria-label="List view" title="List view"><m3e-icon name="view_list"></m3e-icon></m3e-icon-button>
             </div>
           </div>
 
           <div id="files-container" class="files-grid" aria-live="polite"></div>
-          <div id="empty-state" class="empty-state">
+          <m3e-card id="empty-state" class="empty-state" variant="outlined">
             <div class="empty-illustration"><span class="empty-orbit orbit-one"></span><span class="empty-orbit orbit-two"></span><div><m3e-icon name="folder_open"></m3e-icon></div></div>
-            <h2 id="empty-title">Your workspace is ready</h2>
+            <m3e-heading id="empty-title" variant="title" size="large" level="2">Your workspace is ready</m3e-heading>
             <p id="empty-description">Create a folder or add files to start building your private library.</p>
             <div class="empty-actions"><m3e-button variant="filled" data-action="upload"><m3e-icon slot="icon" name="upload"></m3e-icon> Upload files</m3e-button><m3e-button variant="tonal" data-action="new-folder"><m3e-icon slot="icon" name="create_new_folder"></m3e-icon> Create folder</m3e-button></div>
-          </div>
+          </m3e-card>
 
-          <div class="bottom-note"><m3e-icon name="info"></m3e-icon><span>Local-first by design. Your files remain in this browser's IndexedDB storage.</span><button class="text-action" data-action="learn-storage">Learn more</button></div>
+          <m3e-card class="bottom-note" variant="filled"><m3e-icon name="info"></m3e-icon><span>Local-first by design. Your files remain in this browser's IndexedDB storage.</span><m3e-button class="text-action" variant="text" data-action="learn-storage">Learn more</m3e-button></m3e-card>
         </section>
       </main>
     </div>
@@ -123,21 +126,36 @@
     <input id="file-input" type="file" multiple hidden />
     <input id="backup-input" type="file" accept=".json,application/json" hidden />
 
-    <div id="dialog-backdrop" class="dialog-backdrop hidden" role="presentation">
-      <section id="dialog-panel" class="dialog-panel" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
-        <div class="dialog-header"><div><div class="dialog-kicker" id="dialog-kicker">LOCAL STORAGE</div><h2 id="dialog-title">Create folder</h2></div><button class="icon-button" data-action="close-dialog" aria-label="Close dialog"><m3e-icon name="close"></m3e-icon></button></div>
-        <form id="dialog-form"><div id="dialog-body"></div><div class="dialog-actions"><button type="button" class="plain-button" data-action="close-dialog">Cancel</button><m3e-button id="dialog-submit" type="submit" variant="filled">Create</m3e-button></div></form>
-      </section>
-    </div>
+    <m3e-dialog id="app-dialog" class="app-dialog" dismissible>
+      <div slot="header" class="dialog-header">
+        <div>
+          <div class="dialog-kicker" id="dialog-kicker">M3E LOCAL STORAGE</div>
+          <m3e-heading id="dialog-title" variant="title" size="large" level="2">Create folder</m3e-heading>
+        </div>
+      </div>
+      <div id="dialog-body" class="dialog-body"></div>
+      <div slot="actions" class="dialog-actions">
+        <m3e-button id="dialog-cancel" variant="text" data-action="close-dialog">Cancel</m3e-button>
+        <m3e-button id="dialog-submit" variant="filled" data-action="dialog-submit">Create</m3e-button>
+      </div>
+    </m3e-dialog>
 
-    <div id="preview-backdrop" class="preview-backdrop hidden" role="presentation">
-      <section class="preview-panel" role="dialog" aria-modal="true" aria-labelledby="preview-title">
-        <header class="preview-header"><div class="preview-file-icon"><m3e-icon id="preview-icon" name="description"></m3e-icon></div><div class="preview-heading"><h2 id="preview-title">File preview</h2><p id="preview-meta"></p></div><div class="preview-actions"><button class="icon-button" data-action="download-preview" aria-label="Download file"><m3e-icon name="download"></m3e-icon></button><button class="icon-button" data-action="close-preview" aria-label="Close preview"><m3e-icon name="close"></m3e-icon></button></div></header>
-        <div id="preview-content" class="preview-content"></div>
-      </section>
-    </div>
+    <m3e-dialog id="preview-dialog" class="preview-panel" dismissible>
+      <m3e-icon slot="close-icon" name="close"></m3e-icon>
+      <div slot="header" class="preview-header">
+        <div class="preview-file-icon"><m3e-icon id="preview-icon" name="description"></m3e-icon></div>
+        <div class="preview-heading">
+          <m3e-heading id="preview-title" variant="title" size="medium" level="2">File preview</m3e-heading>
+          <p id="preview-meta"></p>
+        </div>
+        <div class="preview-actions">
+          <m3e-icon-button class="icon-button" data-action="download-preview" aria-label="Download file"><m3e-icon name="download"></m3e-icon></m3e-icon-button>
+        </div>
+      </div>
+      <div id="preview-content" class="preview-content"></div>
+    </m3e-dialog>
 
-    <div id="toast" class="toast" role="status" aria-live="polite"><m3e-icon name="check_circle"></m3e-icon><span id="toast-message">Saved</span></div>
+    <m3e-snackbar id="toast"></m3e-snackbar>
     <div id="drag-overlay" class="drag-overlay"><div><m3e-icon name="cloud_upload"></m3e-icon><h2>Drop files to add them</h2><p>Your files will be stored only in this browser.</p></div></div>
     <script type="module" src="/src/main.js"></script>
   </body>
