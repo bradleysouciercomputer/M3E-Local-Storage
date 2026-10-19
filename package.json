@@ -1,0 +1,17 @@
+{
+  "name": "m3e-local-storage",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@m3e/web": "^2.10.1"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0"
+  }
+}
