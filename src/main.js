@@ -217,15 +217,39 @@ function getVisibleEntries() {
 
 function breadcrumbHTML() {
   if (state.query.trim()) {
-    return '<button class="crumb" data-action="clear-search"><m3e-icon name="search"></m3e-icon> Search results</button>';
+    return '<m3e-breadcrumb><m3e-breadcrumb-item data-action="clear-search">Search results</m3e-breadcrumb-item></m3e-breadcrumb>';
   }
   if (state.section !== "files") return "";
   const parts = [{ id: null, name: "All files" }].concat(folderPath(state.folderId));
-  return parts.map((part, index) => {
+  return '<m3e-breadcrumb wrap>' + parts.map((part, index) => {
     const isLast = index === parts.length - 1;
-    return (index ? '<span class="crumb-separator">/</span>' : "") +
-      '<button class="crumb ' + (isLast ? "current" : "") + '" data-action="breadcrumb" data-id="' + (part.id || "") + '" ' + (isLast ? 'aria-current="page"' : "") + '>' + escapeHTML(part.name) + '</button>';
-  }).join("");
+    return '<m3e-breadcrumb-item data-action="breadcrumb" data-id="' + (part.id || "") + '" ' + (isLast ? 'current="page"' : "") + '>' + escapeHTML(part.name) + '</m3e-breadcrumb-item>';
+  }).join("") + '</m3e-breadcrumb>';
+}
+
+function itemMenuTrigger(entry) {
+  return '<m3e-icon-button class="card-action menu-trigger" aria-label="More actions for ' + escapeHTML(entry.name) + '" title="More actions">' +
+    '<m3e-menu-trigger for="entry-menu-' + entry.id + '"><m3e-icon name="more_vert"></m3e-icon></m3e-menu-trigger>' +
+    '</m3e-icon-button>';
+}
+
+function itemMenuMarkup(entry, isTrash) {
+  const folder = entry.type === "folder";
+  let items;
+  if (isTrash) {
+    items =
+      '<m3e-menu-item data-action="restore" data-id="' + entry.id + '"><m3e-icon slot="icon" name="restore"></m3e-icon>Restore</m3e-menu-item>' +
+      '<m3e-menu-item data-action="delete-permanent" data-id="' + entry.id + '"><m3e-icon slot="icon" name="delete_forever"></m3e-icon>Delete forever</m3e-menu-item>';
+  } else {
+    items =
+      '<m3e-menu-item data-action="open-entry" data-id="' + entry.id + '"><m3e-icon slot="icon" name="' + (folder ? "folder_open" : "visibility") + '"></m3e-icon>' + (folder ? "Open folder" : "Preview") + '</m3e-menu-item>' +
+      '<m3e-menu-item data-action="rename" data-id="' + entry.id + '"><m3e-icon slot="icon" name="drive_file_rename_outline"></m3e-icon>Rename</m3e-menu-item>' +
+      '<m3e-menu-item data-action="move" data-id="' + entry.id + '"><m3e-icon slot="icon" name="drive_file_move"></m3e-icon>Move to folder</m3e-menu-item>' +
+      '<m3e-menu-item data-action="toggle-favorite" data-id="' + entry.id + '"><m3e-icon slot="icon" name="' + (entry.favorite ? "star" : "star_border") + '"></m3e-icon>' + (entry.favorite ? "Remove from favorites" : "Add to favorites") + '</m3e-menu-item>' +
+      '<m3e-divider></m3e-divider>' +
+      '<m3e-menu-item data-action="trash-entry" data-id="' + entry.id + '"><m3e-icon slot="icon" name="delete_outline"></m3e-icon>Move to trash</m3e-menu-item>';
+  }
+  return '<m3e-menu class="context-menu" id="entry-menu-' + entry.id + '">' + items + '</m3e-menu>';
 }
 
 function renderGridCard(entry) {
@@ -234,47 +258,35 @@ function renderGridCard(entry) {
   const selected = state.selected.has(entry.id);
   const childCount = folder ? directChildren(entry.id, isTrash).length : 0;
   const details = folder ? (childCount + (childCount === 1 ? " item" : " items")) : formatBytes(entry.size || 0);
-  const menu = state.openMenuId === entry.id;
-  let menuItems = "";
-  if (isTrash) {
-    menuItems = '<button data-action="restore" data-id="' + entry.id + '"><m3e-icon name="restore"></m3e-icon> Restore</button><button class="danger-menu-item" data-action="delete-permanent" data-id="' + entry.id + '"><m3e-icon name="delete_forever"></m3e-icon> Delete forever</button>';
-  } else {
-    menuItems = '<button data-action="open-entry" data-id="' + entry.id + '"><m3e-icon name="' + (folder ? "folder_open" : "visibility") + '"></m3e-icon> ' + (folder ? "Open folder" : "Preview") + '</button>' +
-      '<button data-action="rename" data-id="' + entry.id + '"><m3e-icon name="drive_file_rename_outline"></m3e-icon> Rename</button>' +
-      '<button data-action="move" data-id="' + entry.id + '"><m3e-icon name="drive_file_move"></m3e-icon> Move to folder</button>' +
-      '<button data-action="toggle-favorite" data-id="' + entry.id + '"><m3e-icon name="' + (entry.favorite ? "star" : "star_border") + '"></m3e-icon> ' + (entry.favorite ? "Remove from favorites" : "Add to favorites") + '</button>' +
-      '<button class="danger-menu-item" data-action="trash-entry" data-id="' + entry.id + '"><m3e-icon name="delete_outline"></m3e-icon> Move to trash</button>';
-  }
   const parent = entry.parentId && (state.section === "recent" || state.section === "favorites" || state.query.trim()) ? getEntry(entry.parentId) : null;
-  return '<article class="file-card ' + (selected ? "is-selected " : "") + (folder ? "folder-card " : "file-tile ") + '" data-entry-card data-id="' + entry.id + '" data-type="' + entry.type + '" draggable="true">' +
-    '<div class="card-top"><label class="select-wrap" title="Select item"><input class="select-item" type="checkbox" data-select="' + entry.id + '" aria-label="Select ' + escapeHTML(entry.name) + '" ' + (selected ? "checked" : "") + '><span></span></label>' +
-    '<div class="card-actions"><button class="card-action ' + (entry.favorite ? "starred" : "") + '" data-action="toggle-favorite" data-id="' + entry.id + '" aria-label="' + (entry.favorite ? "Remove favorite" : "Add favorite") + '" title="' + (entry.favorite ? "Remove favorite" : "Add favorite") + '"><m3e-icon name="' + (entry.favorite ? "star" : "star_border") + '"></m3e-icon></button>' +
-    '<button class="card-action" data-action="item-menu" data-id="' + entry.id + '" aria-label="More actions for ' + escapeHTML(entry.name) + '" title="More actions"><m3e-icon name="more_vert"></m3e-icon></button></div></div>' +
-    '<button class="file-main" data-action="open-entry" data-id="' + entry.id + '" aria-label="' + (folder ? "Open folder " : "Preview file ") + escapeHTML(entry.name) + '">' +
+  return '<m3e-card class="file-card ' + (selected ? "is-selected " : "") + (folder ? "folder-card " : "file-tile ") + '" variant="outlined" data-entry-card data-id="' + entry.id + '" data-type="' + entry.type + '" draggable="true">' +
+    '<div class="card-top"><div class="select-wrap" title="Select item"><m3e-checkbox class="select-item" data-select="' + entry.id + '" aria-label="Select ' + escapeHTML(entry.name) + '" ' + (selected ? "checked" : "") + '></m3e-checkbox></div>' +
+    '<div class="card-actions"><m3e-icon-button class="card-action ' + (entry.favorite ? "starred" : "") + '" variant="standard" toggle ' + (entry.favorite ? "selected" : "") + ' data-action="toggle-favorite" data-id="' + entry.id + '" aria-label="' + (entry.favorite ? "Remove favorite" : "Add favorite") + '" title="' + (entry.favorite ? "Remove favorite" : "Add favorite") + '"><m3e-icon name="' + (entry.favorite ? "star" : "star_border") + '"></m3e-icon></m3e-icon-button>' +
+    (isTrash ? "" : itemMenuTrigger(entry)) + '</div></div>' +
+    '<m3e-button class="file-main" variant="text" data-action="open-entry" data-id="' + entry.id + '" aria-label="' + (folder ? "Open folder " : "Preview file ") + escapeHTML(entry.name) + '">' +
     '<div class="file-art ' + (folder ? "folder-art" : "file-art-" + extensionOf(entry.name).replace(/[^a-z0-9]/g, "").slice(0, 8)) + '"><m3e-icon name="' + iconFor(entry) + '"></m3e-icon>' + (!folder && entry.favorite ? '<span class="art-favorite"><m3e-icon name="star"></m3e-icon></span>' : "") + '</div>' +
-    '<div class="file-title-line"><strong title="' + escapeHTML(entry.name) + '">' + escapeHTML(entry.name) + '</strong></div>' +
+    '<div class="file-title-line"><m3e-heading variant="title" size="small" level="3" title="' + escapeHTML(entry.name) + '">' + escapeHTML(entry.name) + '</m3e-heading></div>' +
     '<span class="file-detail">' + escapeHTML(details) + '</span>' +
     (parent ? '<span class="file-location"><m3e-icon name="folder"></m3e-icon> ' + escapeHTML(parent.name) + '</span>' : "") +
     (!folder ? '<span class="file-date">' + escapeHTML(formatDate(entry.updatedAt || entry.createdAt)) + '</span>' : "") +
-    '</button>' +
-    (menu ? '<div class="context-menu" role="menu">' + menuItems + '</div>' : "") +
-    '</article>';
+    '</m3e-button>' +
+    itemMenuMarkup(entry, isTrash) +
+    '</m3e-card>';
 }
 
 function renderListRow(entry) {
   const isTrash = state.section === "trash";
   const selected = state.selected.has(entry.id);
   const folder = entry.type === "folder";
-  const menu = state.openMenuId === entry.id;
   const parent = entry.parentId && (state.section === "recent" || state.section === "favorites" || state.query.trim()) ? getEntry(entry.parentId) : null;
   const actions = isTrash
-    ? '<button class="card-action" data-action="restore" data-id="' + entry.id + '" title="Restore" aria-label="Restore"><m3e-icon name="restore"></m3e-icon></button><button class="card-action" data-action="delete-permanent" data-id="' + entry.id + '" title="Delete forever" aria-label="Delete forever"><m3e-icon name="delete_forever"></m3e-icon></button>'
-    : '<button class="card-action ' + (entry.favorite ? "starred" : "") + '" data-action="toggle-favorite" data-id="' + entry.id + '" title="Favorite" aria-label="Favorite"><m3e-icon name="' + (entry.favorite ? "star" : "star_border") + '"></m3e-icon></button><button class="card-action" data-action="item-menu" data-id="' + entry.id + '" title="More actions" aria-label="More actions"><m3e-icon name="more_vert"></m3e-icon></button>';
-  return '<div class="list-row ' + (selected ? "is-selected" : "") + '" data-entry-card data-id="' + entry.id + '" data-type="' + entry.type + '" draggable="true">' +
-    '<div class="list-name-cell"><label class="select-wrap"><input class="select-item" type="checkbox" data-select="' + entry.id + '" aria-label="Select ' + escapeHTML(entry.name) + '" ' + (selected ? "checked" : "") + '><span></span></label><span class="list-file-icon ' + (folder ? "folder-color" : "") + '"><m3e-icon name="' + iconFor(entry) + '"></m3e-icon></span><button class="list-entry-name" data-action="open-entry" data-id="' + entry.id + '">' + escapeHTML(entry.name) + '</button>' + (parent ? '<span class="list-parent">' + escapeHTML(parent.name) + '</span>' : "") + '</div>' +
+    ? '<m3e-icon-button class="card-action" variant="standard" data-action="restore" data-id="' + entry.id + '" title="Restore" aria-label="Restore"><m3e-icon name="restore"></m3e-icon></m3e-icon-button><m3e-icon-button class="card-action" variant="standard" data-action="delete-permanent" data-id="' + entry.id + '" title="Delete forever" aria-label="Delete forever"><m3e-icon name="delete_forever"></m3e-icon></m3e-icon-button>'
+    : '<m3e-icon-button class="card-action ' + (entry.favorite ? "starred" : "") + '" variant="standard" toggle ' + (entry.favorite ? "selected" : "") + ' data-action="toggle-favorite" data-id="' + entry.id + '" title="Favorite" aria-label="Favorite"><m3e-icon name="' + (entry.favorite ? "star" : "star_border") + '"></m3e-icon></m3e-icon-button>' + itemMenuTrigger(entry);
+  return '<m3e-card class="list-row ' + (selected ? "is-selected" : "") + '" variant="outlined" data-entry-card data-id="' + entry.id + '" data-type="' + entry.type + '" draggable="true">' +
+    '<div class="list-name-cell"><div class="select-wrap"><m3e-checkbox class="select-item" data-select="' + entry.id + '" aria-label="Select ' + escapeHTML(entry.name) + '" ' + (selected ? "checked" : "") + '></m3e-checkbox></div><span class="list-file-icon ' + (folder ? "folder-color" : "") + '"><m3e-icon name="' + iconFor(entry) + '"></m3e-icon></span><m3e-button class="list-entry-name" variant="text" data-action="open-entry" data-id="' + entry.id + '">' + escapeHTML(entry.name) + '</m3e-button>' + (parent ? '<span class="list-parent">' + escapeHTML(parent.name) + '</span>' : "") + '</div>' +
     '<span class="list-type">' + escapeHTML(fileKind(entry)) + '</span><span class="list-size">' + (folder ? "—" : escapeHTML(formatBytes(entry.size || 0))) + '</span><span class="list-date">' + escapeHTML(formatDate(entry.updatedAt || entry.createdAt)) + '</span><div class="list-actions">' + actions + '</div>' +
-    (menu ? '<div class="context-menu list-context" role="menu">' + (isTrash ? '<button data-action="restore" data-id="' + entry.id + '">Restore</button><button class="danger-menu-item" data-action="delete-permanent" data-id="' + entry.id + '">Delete forever</button>' : '<button data-action="rename" data-id="' + entry.id + '">Rename</button><button data-action="move" data-id="' + entry.id + '">Move to folder</button><button class="danger-menu-item" data-action="trash-entry" data-id="' + entry.id + '">Move to trash</button>') + '</div>' : "") +
-    '</div>';
+    itemMenuMarkup(entry, isTrash) +
+    '</m3e-card>';
 }
 
 function render() {
@@ -707,7 +719,7 @@ async function openPreview(id) {
 }
 
 function previewDetailsHTML(entry) {
-  return '<div class="preview-generic"><div class="generic-file-art"><m3e-icon name="' + iconFor(entry) + '"></m3e-icon></div><h3>' + escapeHTML(entry.name) + '</h3><p>This file type cannot be previewed here, but the original file is saved locally and can be downloaded.</p><div class="detail-grid"><span>File type</span><strong>' + escapeHTML(fileKind(entry)) + '</strong><span>Size</span><strong>' + escapeHTML(formatBytes(entry.size || 0)) + '</strong><span>Last updated</span><strong>' + escapeHTML(formatDate(entry.updatedAt || entry.createdAt)) + '</strong></div><button class="primary-native" data-action="download-preview"><m3e-icon name="download"></m3e-icon> Download file</button></div>';
+  return '<div class="preview-generic"><div class="generic-file-art"><m3e-icon name="' + iconFor(entry) + '"></m3e-icon></div><h3>' + escapeHTML(entry.name) + '</h3><p>This file type cannot be previewed here, but the original file is saved locally and can be downloaded.</p><div class="detail-grid"><span>File type</span><strong>' + escapeHTML(fileKind(entry)) + '</strong><span>Size</span><strong>' + escapeHTML(formatBytes(entry.size || 0)) + '</strong><span>Last updated</span><strong>' + escapeHTML(formatDate(entry.updatedAt || entry.createdAt)) + '</strong></div><m3e-button class="primary-native" variant="filled" data-action="download-preview"><m3e-icon slot="icon" name="download"></m3e-icon> Download file</m3e-button></div>';
 }
 
 function toggleFavorite(id) {
